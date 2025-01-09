@@ -1,0 +1,31 @@
+name: Lint-deployment
+on:
+  push:
+    branches:
+      - main
+      - master
+  workflow_dispatch: null
+jobs:
+  Linting:
+    runs-on: ubuntu-latest
+    steps:
+      - name: clone-repo
+        uses: actions/checkout@v2
+      - name: install-dependencies
+        run: npm ci
+      - name: test-code
+        run: npm test
+      - name: lint-code
+        run: npm run test
+      - name: build
+        run: npm run build
+  deployment:
+    needs: Linting
+    runs-on: ubuntu-latest
+    steps:
+      - name: clone-repo
+        uses: actions/checkout@v2
+      - name: install-dependencies
+        run: npm ci
+      - name: publish
+        run: echo "Publishing..."
