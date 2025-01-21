@@ -18,6 +18,11 @@ jobs:
     steps:
       - name: clone-repo
         uses: actions/checkout@v2
+      - name: Cache
+        uses: actions/cache@v3
+        with:
+          path: ~./npm
+          keys: deps-node-modules-${{hashFiles('**/package.lock.json')}}
       - name: install-dependencies
         run: npm ci
       - name: test-code
@@ -26,22 +31,22 @@ jobs:
         run: npm run test
       - name: build
         run: npm run build
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: artifacts
+          path: dist
       # - name:
   deployment:
     needs: Linting
     runs-on: ubuntu-latest
     steps:
-      - name: clone-repo
-        uses: actions/checkout@v2
-      - name: install-dependencies
-        run: npm ci
-      - name: build
-        run: npm run build
-      - name: Upload Artifact
-        uses: actions/upload-artifact@v4
+      - name: download-artifact
+        uses: actions/download-artifacts@v4
+        id: artifact-download
         with:
-          name: artifacts
           path: artifacts
-
-      - name: publish
-        run: echo "Publishing..."
+      - name: deploy
+        if: failure() && steps.artifact-download.outcome == 'failure'
+        run: echo "deployed successfully"
+      # - name:
