@@ -1,0 +1,44 @@
+name: Matrix-practice
+on:
+  push:
+    branches:
+      - main
+  workflow_dispatch:
+jobs:
+  checkout:
+    runs-on: ubuntu-latest
+    steps:
+      - name: clone-repo
+        uses: actions/checkout@v4
+      - name: install-dependencies
+        run: npm ci
+  build:
+    strategy:
+      matrix:
+        environments: [dev, demo, staging]
+    runs-on: ubuntu-latest
+    steps:
+      - name: build_for_${{matrix.environments}}
+        run: npm run build:${{matrix.environments}}
+      - name: upload_${{matrix.environments}}_artifact
+        uses: actions/upload-artifact@4
+        with:
+          path: ${{github.workspace}}/artifacts/${{matrix.environments}}
+  deployment-to-dev:
+    needs: build
+    runs-on: ubuntu-latest
+    steps:
+      - name: download-artifact
+        uses: actions/download-artifacts@4
+        with:
+          path: ${{github.workspace}}/artifacts/dev
+      - name: upload-to-server
+        run: echo "uploading to server..."
+
+  report:
+    needs: [build, checkout, deployment-to-dev]
+    if: failure()
+    runs-on: ubuntu-latest
+    steps:
+      - name: output-error
+        run: echo ${{toJson(github)}}
