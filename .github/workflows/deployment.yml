@@ -25,6 +25,7 @@ jobs:
           keys: deps-node-modules-${{hashFiles('**/package.lock.json')}}
       - name: install-dependencies
         run: npm ci
+        continue-on-error: true
       - name: test-code
         run: npm test
       - name: lint-code
@@ -42,7 +43,8 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: download-artifact
-        uses: actions/download-artifacts@v4
+        # uses: actions/download-artifacts@v4
+        uses: actions/download-artifact@v4
         id: artifact-download
         with:
           path: artifacts
@@ -50,3 +52,12 @@ jobs:
         if: failure() && steps.artifact-download.outcome == 'failure'
         run: echo "deployed successfully"
       # - name:
+  report:
+    needs:
+      - deployment
+      - Linting
+    runs-on: ubuntu-latest
+    if: failure()
+    steps:
+      - name: output-report
+        run: echo "${{toJson(github)}}"
