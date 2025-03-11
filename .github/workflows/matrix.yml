@@ -22,7 +22,7 @@ jobs:
       - name: build_for_${{matrix.environments}}
         run: npm run build:${{matrix.environments}}
       - name: upload_${{matrix.environments}}_artifact
-        uses: actions/upload-artifact@3
+        uses: actions/upload-artifact@v3
         with:
           path: ${{github.workspace}}/artifacts/${{matrix.environments}}
   deployment-to-dev:
@@ -30,7 +30,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: download-artifact
-        uses: actions/download-artifacts@4
+        uses: actions/download-artifacts@v4
         with:
           path: ${{github.workspace}}/artifacts/dev
       - name: upload-to-server
